@@ -1,0 +1,5 @@
+typogrify:
+  version: 1.x
+  css:
+    theme:
+      typogrify.css: {}
