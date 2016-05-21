@@ -1,8 +1,9 @@
 name: Typogrify
+type: module
 description: 'Adds typographic refinements.'
 package: 'Input filters'
 core: 8.x
 version: 8.x-1.0-dev
 project: typogrify
-datestamp: '1450473540'
-type: module
+dependencies:
+  -  filter
