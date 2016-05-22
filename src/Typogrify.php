@@ -1,5 +1,4 @@
 <?php
-namespace Drupal\typogrify;
 
 /**
  * @file typogrify.class.php

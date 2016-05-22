@@ -47,30 +47,12 @@ class TypogrifyFilter extends FilterBase {
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
     $settings =  $this->settings;
+
+    // @fixme Use the auto loader for this business.
+    // @fixme Also these should use composer to be included.
     module_load_include('class.php', 'typogrify');
     module_load_include('php', 'typogrify', 'unicode-conversion');
     module_load_include('php', 'typogrify', 'smartypants');
-
-    // Add our default settings to the array if they are not present.
-    $settings += array(
-      'smartypants_enabled' => 1,
-      'smartypants_hyphens' => 2,
-      'space_hyphens' => 0,
-      'wrap_ampersand' => 1,
-      'widont_enabled' => 1,
-      'space_to_nbsp' => 1,
-      'wrap_abbr' => 0,
-      'wrap_caps' => 1,
-      'wrap_initial_quotes' => 1,
-      'hyphenate_shy' => 0,
-      'wrap_numbers' => 0,
-      'ligatures' => array(),
-      'arrows' => array(),
-      'fractions' => array(),
-      'quotes' => array(),
-    );
-
-    $form = array();
 
     $form['help'] = array(
       '#type' => 'markup',
@@ -277,13 +259,14 @@ class TypogrifyFilter extends FilterBase {
   /**
    * {@inheritdoc}
    */
-  //private function _typogrify_process($text, $filter, $format, $langcode, $cache, $cache_id) {
   public function process($text, $langcode) {
     $characters_to_convert = array();
     $ctx = array();
 
     if ($langcode == 'und') {
       $language = \Drupal::languageManager()->getCurrentLanguage();
+
+      // @fixme, check language business for d8
       $ctx['langcode'] = $language->language;
     }
     else {
@@ -386,7 +369,6 @@ class TypogrifyFilter extends FilterBase {
   /**
    * {@inheritdoc}
    */
-  //function _typogrify_filter_tips($filter, $format, $long) {
   public function tips($long = FALSE) {
     $settings = $this->settings;
 
@@ -439,6 +421,7 @@ class TypogrifyFilter extends FilterBase {
 
     return $output;
   }
+
   /**
    * Helper function to unquote a string.
    *
