@@ -45,14 +45,6 @@ function typogrify_filter_info_alter(&$info) {
   ];
 }
 
-function _typogrify_unquote($_) {
-  $_ = str_replace(
-    array('&lt;', '&gt;'),
-    array('<',    '>'),
-    $_);
-  return $_;
-}
-
 /**
  * Typogrify filter settings form.
  *

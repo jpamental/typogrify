@@ -195,5 +195,23 @@ class TypogrifyFilter extends FilterBase {
 
     return $output;
   }
+  /**
+   * Helper function to unquote a string.
+   *
+   * Unquotes a string.
+   *
+   * @param string|array $attribute_values
+   *   String to be unquoted.
+   *
+   * @return string|string
+   */
+  private function unquote($_) {
+    $_ = str_replace(
+      array('&lt;', '&gt;'),
+      array('<',    '>'),
+      $_);
+
+    return $_;
+  }
 
 }
