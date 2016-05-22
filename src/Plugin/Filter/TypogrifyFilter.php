@@ -20,6 +20,23 @@ use Drupal\filter\Plugin\FilterBase;
  *   title = @Translation("Typogrify"),
  *   description = @Translation("Adds typographic refinements"),
  *   type = Drupal\filter\Plugin\FilterInterface::TYPE_TRANSFORM_IRREVERSIBLE,
+ *   settings = {
+ *     "smartypants_enabled" = 1,
+ *     "smartypants_hyphens" = 3,
+ *     "space_hyphens" = 0,
+ *     "wrap_ampersand" = 1,
+ *     "widont_enabled"= 1,
+ *     "space_to_nbsp" = 1,
+ *     "hyphenate_shy" = 0,
+ *     "wrap_abbr" = 0,
+ *     "wrap_caps" = 1,
+ *     "wrap_initial_quotes" = 1,
+ *     "wrap_numbers" = 0,
+ *     "ligatures" = [],
+ *     "arrows" = [],
+ *     "fractions" = [],
+ *     "quotes" = [],
+ *   },
  *   weight = 9
  * )
  */
