@@ -452,20 +452,11 @@ function _typogrify_settings($form, &$form_state, $filter, $format, $defaults, $
     '!version' => \Drupal::l(PHP_TYPOGRIFY_VERSION, \Drupal\Core\Url::fromUri('http://blog.hamstu.com/')),
   ));
 
-  // @FIXME
-// theme() has been renamed to _theme() and should NEVER be called directly.
-// Calling _theme() directly can alter the expected output and potentially
-// introduce security issues (see https://www.drupal.org/node/2195739). You
-// should use renderable arrays instead.
-// 
-// 
-// @see https://www.drupal.org/node/2195739
-// $form['info']['typogrify_status'] = array(
-//     '#type' => 'item',
-//     '#title' => t('Versions'),
-//     '#markup' => theme('item_list', array('items' => $version_strings)),
-//   );
-
+  $form['info']['typogrify_status']= [
+    '#theme' => 'item_list',
+    '#items' => ['items' => $version_strings],
+    '#title' => t('Versions'),
+  ];
 
   return $form;
 }
