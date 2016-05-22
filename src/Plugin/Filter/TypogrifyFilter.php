@@ -8,6 +8,7 @@
 namespace Drupal\typogrify\Plugin\Filter;
 
 use Drupal\typogrify;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\filter\FilterProcessResult;
 use Drupal\filter\Plugin\FilterBase;
 
@@ -23,6 +24,232 @@ use Drupal\filter\Plugin\FilterBase;
  * )
  */
 class TypogrifyFilter extends FilterBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function settingsForm(array $form, FormStateInterface $form_state) {
+    $settings =  $this->settings;
+    module_load_include('class.php', 'typogrify');
+    module_load_include('php', 'typogrify', 'unicode-conversion');
+    module_load_include('php', 'typogrify', 'smartypants');
+
+    // Add our default settings to the array if they are not present.
+    $settings += array(
+      'smartypants_enabled' => 1,
+      'smartypants_hyphens' => 2,
+      'space_hyphens' => 0,
+      'wrap_ampersand' => 1,
+      'widont_enabled' => 1,
+      'space_to_nbsp' => 1,
+      'wrap_abbr' => 0,
+      'wrap_caps' => 1,
+      'wrap_initial_quotes' => 1,
+      'hyphenate_shy' => 0,
+      'wrap_numbers' => 0,
+      'ligatures' => array(),
+      'arrows' => array(),
+      'fractions' => array(),
+      'quotes' => array(),
+    );
+
+    $form = array();
+
+    $form['help'] = array(
+      '#type' => 'markup',
+      '#value' => '<p>' . t("Enable the following typographic refinements:") . '</p>',
+    );
+
+    // Smartypants settings.
+    $form['smartypants_enabled'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Use typographers quotation marks and dashes (!smartylink)', array(
+        '!smartylink' => \Drupal::l('SmartyPants', \Drupal\Core\Url::fromUri('http://daringfireball.net/projects/smartypants/')),
+      )),
+      '#default_value' => $settings['smartypants_enabled'],
+    );
+
+    // Smartypants hyphenation settings.
+    // Uses the same values as the parse attributes in the SmartyPants
+    // function (@see SmartyPants in smartypants.php)
+    $form['smartypants_hyphens'] = array(
+      '#type' => 'select',
+      '#title' => t('Hyphenation settings for SmartyPants'),
+      '#default_value' => $settings['smartypants_hyphens'],
+      '#options' => array(
+        1 => t('“--” for em-dashes; no en-dash support'),
+        3 => t('“--” for em-dashes; “---” for en-dashes'),
+        2 => t('“---” for em-dashes; “--” for en-dashes'),
+      ),
+    );
+
+    // Replace space_hyphens with em-dash.
+    $form['space_hyphens'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Replace stand-alone dashes (normal dashes between whitespace) em-dashes.'),
+      '#description' => t('" - " will turn into " — ".'),
+      '#default_value' => $settings['space_hyphens'],
+    );
+
+    // Remove widows settings.
+    $form['widont_enabled'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Remove widows'),
+      '#default_value' => $settings['widont_enabled'],
+    );
+
+    // Remove widows settings.
+    $form['hyphenate_shy'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Replace <code>=</code> with <code>&amp;shy;</code>'),
+      '#description' => t('Words may be broken at the hyphenation points marked by “=”.'),
+      '#default_value' => $settings['hyphenate_shy'],
+    );
+
+    // Replace normal spaces with non-breaking spaces before "double punctuation
+    // marks". This is especially useful in french.
+    $form['space_to_nbsp'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Replace normal spaces with non-breaking spaces before "double punctuation marks" !marks.',
+        array('!marks' => '(<code>!?:;</code>)')),
+      '#description' => t('This is especially useful for french.'),
+      '#default_value' => $settings['space_to_nbsp'],
+    );
+
+    // Wrap caps settings.
+    $form['wrap_caps'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Wrap caps'),
+      '#default_value' => $settings['wrap_caps'],
+    );
+
+    // Wrap ampersand settings.
+    $form['wrap_ampersand'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Wrap ampersands'),
+      '#default_value' => $settings['wrap_ampersand'],
+    );
+
+    $form['wrap_abbr'] = array(
+      '#type' => 'select',
+      '#title' => t('Thin space in abbreviations'),
+      '#description' => t('Wraps abbreviations with !span and inserts space after the dots.', array('!span' => '<code>&lt;span class="abbr"&gt;…&lt;/span&gt;</code>')),
+      '#default_value' => $settings['wrap_abbr'],
+      '#options' => array(
+        0 => t('Do nothing'),
+        4 => t('Insert no space'),
+        1 => t('“U+202F“ Narrow no-break space'),
+        2 => t('“U+2009“ Thin space'),
+        3 => t('span with margin-left: 0.167em'),
+      ),
+    );
+
+    $form['wrap_numbers'] = array(
+      '#type' => 'select',
+      '#title' => t('Digit grouping in numbers'),
+      '#description' => t('Wraps numbers with !span and inserts thin space for digit grouping.', array('!span' => '<code>&lt;span class="number"&gt;…&lt;/span&gt;</code>')),
+      '#default_value' => $settings['wrap_numbers'],
+      '#options' => array(
+        0 => t('Do nothing'),
+        1 => t('“U+202F“ Narrow no-break space'),
+        2 => t('“U+2009“ Thin space'),
+        3 => t('span with margin-left: 0.167em'),
+        4 => t('just wrap numbers'),
+      ),
+    );
+
+    // Wrap initial quotes settings.
+    $form['wrap_initial_quotes'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Wrap quotation marks'),
+      '#default_value' => $settings['wrap_initial_quotes'],
+    );
+
+    // Ligature conversion settings.
+    $ligature_options = array();
+    foreach (unicode_conversion_map('ligature') as $ascii => $unicode) {
+      $ligature_options[$ascii] = t('Convert <code>@ascii</code> to !unicode', array(
+        '@ascii' => $ascii,
+        '!unicode' => $unicode,
+      ));
+    }
+
+    $form['ligatures'] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('Ligatures'),
+      '#options' => $ligature_options,
+      '#default_value' => $settings['ligatures'],
+    );
+
+    // Arrow conversion settings.
+    $arrow_options = array();
+    foreach (unicode_conversion_map('arrow') as $ascii => $unicode) {
+      $arrow_options[$ascii] = t('Convert <code>@ascii</code> to !unicode', array(
+        '@ascii' => $this->unquote($ascii),
+        '!unicode' => $unicode,
+      ));
+
+    }
+
+    $form['arrows'] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('Arrows'),
+      '#options' => $arrow_options,
+      '#default_value' =>$settings['arrows'],
+    );
+
+
+    // Fraction conversion settings.
+    $fraction_options = array();
+    foreach (unicode_conversion_map('fraction') as $ascii => $unicode) {
+      $fraction_options[$ascii] = t('Convert <code>@ascii</code> to !unicode', array(
+        '@ascii' => $ascii,
+        '!unicode' => $unicode,
+      ));
+
+    }
+
+    $form['fractions'] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('Fractions'),
+      '#options' => $fraction_options,
+      '#default_value' => $settings['fractions'],
+    );
+
+    // Quotes conversion settings.
+    $quotes_options = array();
+    foreach (unicode_conversion_map('quotes') as $quotes => $unicode) {
+      $quotes_options[$quotes] = t('Convert <code>@ascii</code> to !unicode', array(
+        '@ascii' => _typogrify_unquote($quotes),
+        '!unicode' => $unicode,
+      ));
+    }
+
+    $form['quotes'] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('Quotes'),
+      '#options' => $quotes_options,
+      '#default_value' => $settings['quotes'],
+    );
+
+    // Version Information Settings.
+    $version_strings = array();
+    $version_strings[] = t('SmartyPants PHP version: !version', array(
+      '!version' => Link(SMARTYPANTS_PHP_VERSION, Url::fromUri('http://www.michelf.com/projects/php-smartypants/')),
+    ));
+    $version_strings[] = t('PHP Typogrify Version: !version', array(
+      '!version' => Link(PHP_TYPOGRIFY_VERSION, Url::fromUri('http://blog.hamstu.com/')),
+    ));
+
+    $form['info']['typogrify_status']= [
+      '#theme' => 'item_list',
+      '#items' => ['items' => $version_strings],
+      '#title' => t('Versions'),
+    ];
+
+    return $form;
+  }
+
   /**
    * {@inheritdoc}
    */
@@ -52,35 +279,35 @@ class TypogrifyFilter extends FilterBase {
 
     // Build a list of ligatures to convert.
     foreach (unicode_conversion_map('ligature') as $ascii => $unicode) {
-      if (isset($filter->settings['ligatures'][$ascii]) && $filter->settings['ligatures'][$ascii]) {
+      if (isset($settings['ligatures'][$ascii]) && $settings['ligatures'][$ascii]) {
         $characters_to_convert[] = $ascii;
       }
     }
 
     // Wrap caps.
-    if ($filter->settings['wrap_caps']) {
+    if ($settings['wrap_caps']) {
       $text = Typogrify::caps($text);
     }
 
     // Build a list of arrows to convert.
     foreach (unicode_conversion_map('arrow') as $ascii => $unicode) {
       $htmle = _typogrify_unquote($ascii);
-      if ((isset($filter->settings['arrows'][$ascii]) && $filter->settings['arrows'][$ascii]) ||
-        (isset($filter->settings['arrows'][$htmle]) && $filter->settings['arrows'][$htmle])) {
+      if ((isset($settings['arrows'][$ascii]) && $settings['arrows'][$ascii]) ||
+        (isset($settings['arrows'][$htmle]) && $settings['arrows'][$htmle])) {
         $characters_to_convert[] = $ascii;
       }
     }
 
     // Build a list of fractions to convert.
     foreach (unicode_conversion_map('fraction') as $ascii => $unicode) {
-      if (isset($filter->settings['fractions'][$ascii]) && $filter->settings['fractions'][$ascii]) {
+      if (isset($settings['fractions'][$ascii]) && $settings['fractions'][$ascii]) {
         $characters_to_convert[] = $ascii;
       }
     }
 
     // Build a list of quotation marks to convert.
     foreach (unicode_conversion_map('quotes') as $ascii => $unicode) {
-      if (isset($filter->settings['quotes'][$ascii]) && $filter->settings['quotes'][$ascii]) {
+      if (isset($settings['quotes'][$ascii]) && $settings['quotes'][$ascii]) {
         $characters_to_convert[] = $ascii;
       }
     }
@@ -91,48 +318,48 @@ class TypogrifyFilter extends FilterBase {
     }
 
     // Wrap ampersands.
-    if ($filter->settings['wrap_ampersand']) {
+    if ($settings['wrap_ampersand']) {
       $text = SmartAmpersand($text);
     }
 
     // Smartypants formatting.
-    if ($filter->settings['smartypants_enabled']) {
-      $text = SmartyPants($text, $filter->settings['smartypants_hyphens'], $ctx);
+    if ($settings['smartypants_enabled']) {
+      $text = SmartyPants($text, $settings['smartypants_hyphens'], $ctx);
     }
 
     // Wrap abbreviations.
-    if ($filter->settings['wrap_abbr'] > 0) {
-      $text = typogrify_smart_abbreviation($text, $filter->settings['wrap_abbr']);
+    if ($settings['wrap_abbr'] > 0) {
+      $text = typogrify_smart_abbreviation($text, $settings['wrap_abbr']);
     }
 
     // Wrap huge numbers.
-    if ($filter->settings['wrap_numbers'] > 0) {
-      $text = typogrify_smart_numbers($text, $filter->settings['wrap_numbers']);
+    if ($settings['wrap_numbers'] > 0) {
+      $text = typogrify_smart_numbers($text, $settings['wrap_numbers']);
     }
 
     // Wrap initial quotes.
-    if ($filter->settings['wrap_initial_quotes']) {
+    if ($settings['wrap_initial_quotes']) {
       $text = Typogrify::initial_quotes($text);
     }
 
     // Wrap initial quotes.
-    if ($filter->settings['hyphenate_shy']) {
+    if ($settings['hyphenate_shy']) {
       $text = typogrify_hyphenate($text);
     }
 
     // Remove widows.
-    if ($filter->settings['widont_enabled']) {
+    if ($settings['widont_enabled']) {
       $text = Typogrify::widont($text);
     }
 
     // Replace normal spaces with non-breaking spaces before "double punctuation
     // marks". This is especially useful in french.
-    if (isset($filter->settings['space_to_nbsp']) && $filter->settings['space_to_nbsp']) {
+    if (isset($settings['space_to_nbsp']) && $settings['space_to_nbsp']) {
       $text = typogrify_space_to_nbsp($text);
     }
 
     // Replace normal whitespace '-' whitespace with em-dash.
-    if (isset($filter->settings['space_hyphens']) && $filter->settings['space_hyphens']) {
+    if (isset($settings['space_hyphens']) && $settings['space_hyphens']) {
       $text = typogrify_space_hyphens($text);
     }
 
@@ -144,9 +371,8 @@ class TypogrifyFilter extends FilterBase {
    */
   //function _typogrify_filter_tips($filter, $format, $long) {
   public function tips($long = FALSE) {
-
-    // @fixme: get the settings correctly, this was a guess.
-    $settings = $this->getConfiguration();
+    $settings = $this->settings;
+    
     if ($long) {
       module_load_include('php', 'typogrify', 'unicode-conversion');
 
