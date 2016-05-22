@@ -220,7 +220,7 @@ class TypogrifyFilter extends FilterBase {
     $quotes_options = array();
     foreach (unicode_conversion_map('quotes') as $quotes => $unicode) {
       $quotes_options[$quotes] = t('Convert <code>@ascii</code> to !unicode', array(
-        '@ascii' => _typogrify_unquote($quotes),
+        '@ascii' => $this->unquote($quotes),
         '!unicode' => $unicode,
       ));
     }
@@ -291,7 +291,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Build a list of arrows to convert.
     foreach (unicode_conversion_map('arrow') as $ascii => $unicode) {
-      $htmle = _typogrify_unquote($ascii);
+      $htmle = $this->unquote($ascii);
       if ((isset($settings['arrows'][$ascii]) && $settings['arrows'][$ascii]) ||
         (isset($settings['arrows'][$htmle]) && $settings['arrows'][$htmle])) {
         $characters_to_convert[] = $ascii;
@@ -372,7 +372,7 @@ class TypogrifyFilter extends FilterBase {
   //function _typogrify_filter_tips($filter, $format, $long) {
   public function tips($long = FALSE) {
     $settings = $this->settings;
-    
+
     if ($long) {
       module_load_include('php', 'typogrify', 'unicode-conversion');
 
