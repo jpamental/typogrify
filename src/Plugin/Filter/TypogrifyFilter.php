@@ -37,7 +37,7 @@ use Drupal\filter\Plugin\FilterBase;
  *     "fractions" = [],
  *     "quotes" = [],
  *   },
- *   weight = 9
+ *   weight = 10
  * )
  */
 class TypogrifyFilter extends FilterBase {
