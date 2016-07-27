@@ -11,12 +11,13 @@ use Drupal\typogrify;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\filter\FilterProcessResult;
 use Drupal\filter\Plugin\FilterBase;
+use Drupal\Core\Url;
 
 /**
  * Provides a filter to restrict images to site.
  *
  * @Filter(
- *   id = "typogrify_filter",
+ *   id = "TypogrifyFilter",
  *   title = @Translation("Typogrify"),
  *   description = @Translation("Adds typographic refinements"),
  *   type = Drupal\filter\Plugin\FilterInterface::TYPE_TRANSFORM_IRREVERSIBLE,
@@ -32,10 +33,10 @@ use Drupal\filter\Plugin\FilterBase;
  *     "wrap_caps" = 1,
  *     "wrap_initial_quotes" = 1,
  *     "wrap_numbers" = 0,
- *     "ligatures" = [],
- *     "arrows" = [],
- *     "fractions" = [],
- *     "quotes" = [],
+ *     "ligatures" = {},
+ *     "arrows" = {},
+ *     "fractions" = {},
+ *     "quotes" = {},
  *   },
  *   weight = 10
  * )
