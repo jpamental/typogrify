@@ -1,10 +1,12 @@
 <?php
 
+namespace Drupal\typogrify;
+
 /**
- * @file typogrify.class.php
- * Defines a class for providing different typographical tweaks to HTML
+ * Class \Drupal\typogrify\Typogrify.
  */
 class Typogrify {
+
   /**
    * Enable custom styling of ampersands.
    *
@@ -13,28 +15,34 @@ class Typogrify {
    * ampersands to have whitespace or an '&nbsp;' on both sides.
    *
    * It won't mess up & that are already wrapped, in entities or URLs
+   *
    * @param string
+   *
    * @return string
    */
   public static function amp($text) {
     $amp_finder = "/(\s|&nbsp;)(&|&amp;|&\#38;|&#038;)(\s|&nbsp;)/";
+
     return preg_replace($amp_finder, '\\1<span class="amp">&amp;</span>\\3', $text);
   }
 
   /**
-   * Puts a &thinsp; before and after an &ndash or &mdash;
+   * Puts a &thinsp; before and after an &ndash or &mdash;.
    *
    * Dashes may have whitespace or an ``&nbsp;`` on both sides
+   *
    * @param string
+   *
    * @return string
    */
   public static function dash($text) {
       $dash_finder = "/(\s|&nbsp;|&thinsp;)*(&mdash;|&ndash;|&#x2013;|&#8211;|&#x2014;|&#8212;)(\s|&nbsp;|&thinsp;)*/";
+
       return preg_replace($dash_finder, '&thinsp;\\2&thinsp;', $text);
   }
 
   /**
-   * Helper method for caps method - used for preg_replace_callback
+   * Helper method for caps method - used for preg_replace_callback.
    */
   public static function _cap_wrapper($matchobj) {
     if (!empty($matchobj[2])) {
@@ -42,7 +50,7 @@ class Typogrify {
     }
     else {
       $mthree = $matchobj[3];
-      if (($mthree{strlen($mthree)-1}) == " ") {
+      if (($mthree{strlen($mthree) - 1}) == ' ') {
         $caps = substr($mthree, 0, -1);
         $tail = ' ';
       }
@@ -50,12 +58,13 @@ class Typogrify {
         $caps = $mthree;
         $tail = $matchobj[4];
       }
+
       return sprintf('<span class="caps">%s</span>%s', $caps, $tail);
     }
   }
 
   /**
-   * Stylable capitals
+   * Stylable capitals.
    *
    * Wraps multiple capital letters in ``<span class="caps">``
    * so they can be styled with CSS.
@@ -82,7 +91,7 @@ class Typogrify {
             (\s|\b|$|[)}\]>]))/xu";
 
     foreach ($tokens as $token) {
-      if ( $token[0] == "tag" ) {
+      if ($token[0] == 'tag') {
         // Don't mess with tags.
         $result[] = $token[1];
         $close_match = preg_match(SMARTYPANTS_TAGS_TO_SKIP, $token[1]);
@@ -102,26 +111,28 @@ class Typogrify {
         }
       }
     }
-    return join("", $result);
+
+    return implode('', $result);
   }
 
   /**
-   * Helper method for initial_quotes method - used for preg_replace_callback
+   * Helper method for initial_quotes method - used for preg_replace_callback.
    */
   public static function _quote_wrapper($matchobj) {
     if (!empty($matchobj[7])) {
-      $classname = "dquo";
+      $classname = 'dquo';
       $quote = $matchobj[7];
     }
     else {
-      $classname = "quo";
+      $classname = 'quo';
       $quote = $matchobj[8];
     }
+
     return sprintf('%s<span class="%s">%s</span>', $matchobj[1], $classname, $quote);
   }
 
   /**
-   * initial_quotes
+   * initial_quotes.
    *
    * Wraps initial quotes in ``class="dquo"`` for double quotes or
    * ``class="quo"`` for single quotes. Works in these block tags ``(h1-h6, p, li)``
@@ -137,18 +148,19 @@ class Typogrify {
                     /ix";
 
     if ($do_guillemets) {
-    	$quote_finder = "/((<(p|h[1-6]|li)[^>]*>|^)                     					# start with an opening p, h1-6, li or the start of the string
+        $quote_finder = "/((<(p|h[1-6]|li)[^>]*>|^)                     					# start with an opening p, h1-6, li or the start of the string
 	                    \s*                                             					# optional white space!
 	                    (<(a|em|span|strong|i|b)[^>]*>\s*)*)            					# optional opening inline tags, with more optional white space for each.
 	                    ((\"|&ldquo;|&\#8220;|\xAE|&\#171;|&laquo;)|('|&lsquo;|&\#8216;))    # Find me a quote! (only need to find the left quotes and the primes) - also look for guillemets (>> and << characters))
 	                                                                    					# double quotes are in group 7, singles in group 8
 	                    /ix";
     }
+
     return preg_replace_callback($quote_finder, array('Typogrify', '_quote_wrapper'), $text);
   }
 
   /**
-   * widont
+   * widont.
    *
    * Replaces the space between the last two words in a string with ``&nbsp;``
    * Works in these block tags ``(h1-h6, p, li)`` and also accounts for
@@ -165,23 +177,26 @@ class Typogrify {
                       (<\/(a|em|span|strong|i|b)[^>]*>\s*)*   # optional closing inline tags with optional white space after each
                       ((<\/(p|h[1-6]|li|dt|dd)>)|$))          # end with a closing p, h1-6, li or the end of the string
                       /x";
+
     return preg_replace($widont_finder, '$1&nbsp;$3', $text);
   }
 
   /**
-   * typogrify
+   * typogrify.
    *
    * The super typography filter.
    * Applies the following filters: widont, smartypants, caps, amp, initial_quotes
    * Optionally choose to apply quote span tags to Gullemets as well.
    */
-  public static function filter($text, $do_guillemets=FALSE) {
-    $text = Typogrify::amp($text);
-    $text = Typogrify::widont($text);
+  public static function filter($text, $do_guillemets = FALSE) {
+    $text = self::amp($text);
+    $text = self::widont($text);
     $text = SmartyPants($text);
-    $text = Typogrify::caps($text);
-    $text = Typogrify::initial_quotes($text, $do_guillemets);
-    $text = Typogrify::dash($text);
+    $text = self::caps($text);
+    $text = self::initial_quotes($text, $do_guillemets);
+    $text = self::dash($text);
+
     return $text;
   }
+
 }

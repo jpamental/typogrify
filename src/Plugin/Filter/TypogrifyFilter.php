@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\typogrify\Plugin\Filter\FilterHtmlImageSecure.
- */
-
 namespace Drupal\typogrify\Plugin\Filter;
 
 use Drupal\typogrify;
@@ -47,7 +42,7 @@ class TypogrifyFilter extends FilterBase {
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
-    $settings =  $this->settings;
+    $settings = $this->settings;
 
     // @fixme Use the auto loader for this business.
     // @fixme Also these should use composer to be included.
@@ -57,7 +52,7 @@ class TypogrifyFilter extends FilterBase {
 
     $form['help'] = array(
       '#type' => 'markup',
-      '#value' => '<p>' . t("Enable the following typographic refinements:") . '</p>',
+      '#value' => '<p>' . t('Enable the following typographic refinements:') . '</p>',
     );
 
     // Smartypants settings.
@@ -195,9 +190,8 @@ class TypogrifyFilter extends FilterBase {
       '#type' => 'checkboxes',
       '#title' => t('Arrows'),
       '#options' => $arrow_options,
-      '#default_value' =>$settings['arrows'],
+      '#default_value' => $settings['arrows'],
     );
-
 
     // Fraction conversion settings.
     $fraction_options = array();
@@ -241,7 +235,7 @@ class TypogrifyFilter extends FilterBase {
       '!version' => Link(PHP_TYPOGRIFY_VERSION, Url::fromUri('http://blog.hamstu.com/')),
     ));
 
-    $form['info']['typogrify_status']= [
+    $form['info']['typogrify_status'] = [
       '#theme' => 'item_list',
       '#items' => ['items' => $version_strings],
       '#title' => t('Versions'),
@@ -388,7 +382,7 @@ class TypogrifyFilter extends FilterBase {
         $output .= '<li>' . t("Converts straight quotation marks to typographer's quotation marks, using SmartyPants.");
         $output .= '</li><li>' . t('Wraps initial quotation marks with !quote or !dquote.', array(
               '!quote' => '<code>&lt;span class="quo"&gt;&lt;/span&gt;</code>',
-              '!dquote' => '<code>&lt;span class="dquo"&gt;&lt;/span&gt;</code>')
+              '!dquote' => '<code>&lt;span class="dquo"&gt;&lt;/span&gt;</code>', )
           ) . '</li>';
       }
       $output .= t('<li>Converts multiple hyphens to en dashes and em dashes (according to your preferences), using SmartyPants.</li>');

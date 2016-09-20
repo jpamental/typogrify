@@ -1,15 +1,12 @@
 <?php
+
 namespace Drupal\typogrify;
 
-/**
- * @file
- * Unit tests for the basic typogrify functionality.
- */
 class TypogrifySmartyPantsTestCase extends DrupalWebTestCase {
   /**
    * Implements getInfo().
    */
-  function getInfo() {
+  public function getInfo() {
     return array(
       'name' => t('Typogrify with SmartyPants'),
       'description' => t('Test the application of the full package of Typogrify and SmartyPants.'),
@@ -20,7 +17,7 @@ class TypogrifySmartyPantsTestCase extends DrupalWebTestCase {
   /**
    * Implement setUp().
    */
-  function setUp() {
+  public function setUp() {
     parent::setUp('typogrify');
     module_load_include('class.php', 'typogrify');
     module_load_include('php', 'typogrify', 'unicode-conversion');
@@ -40,7 +37,7 @@ class TypogrifySmartyPantsTestCase extends DrupalWebTestCase {
       'ligatures' => array(),
       'arrows' => array(),
       'quotes' => array(),
-    )
+    ),
   );
 
   }
@@ -48,7 +45,7 @@ class TypogrifySmartyPantsTestCase extends DrupalWebTestCase {
   /**
    * Original example compatibility-test.
    */
-  function testOriginalTypogrifyExample() {
+  public function testOriginalTypogrifyExample() {
 
     $before = <<<HTML
 <h2>"Jayhawks" & KU fans act extremely obnoxiously</h2>

@@ -1,0 +1,21 @@
+{
+    "name": "drupal/typogrify",
+    "description": "A filter for making typographic refinements.",
+    "type": "drupal-module",
+    "keywords": ["Drupal"],
+    "license": "GPL-2.0+",
+    "homepage": "http://drupal.org/project/typogrify",
+    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "See contributors",
+            "homepage": "https://www.drupal.org/node/149970/committers",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "http://drupal.org/project/typogrify",
+        "source": "http://cgit.drupalcode.org/typogrify"
+    },
+    "require": {}
+}
