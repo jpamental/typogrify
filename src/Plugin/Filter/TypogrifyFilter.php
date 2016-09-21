@@ -39,6 +39,58 @@ use Drupal\Core\Url;
 class TypogrifyFilter extends FilterBase {
 
   /**
+   * The keys in the settings array that are array-valued.
+   *
+   * @var array
+   */
+  protected static $arraySettingsKeys = array(
+    'ligatures',
+    'arrows',
+    'fractions',
+    'quotes',
+  );
+
+  /**
+   * Serialize array values.
+   *
+   * There must be a better way to do this, but it looks as though trying to
+   * save an array-valued plugin setting fails. Our solution is to serialize the
+   * settings before saving and unserialize them before using.
+   *
+   * Serialize $settings[$key] for each $key in $arraySettingsKeys.
+   *
+   * @param array &$settings
+   *   The array of plugin settings.
+   *
+   * @see settingsUnserialize()
+   */
+  protected static function settingsSerialize(array &$settings) {
+    foreach (static::$arraySettingsKeys as $key) {
+      if (isset($settings[$key]) && is_array($settings[$key])) {
+        $settings[$key] = serialize(array_filter($settings[$key]));
+      }
+    }
+  }
+
+  /**
+   * Unserialize array values.
+   *
+   * Unserialize $settings[$key] for each $key in $arraySettingsKeys.
+   *
+   * @param array &$settings
+   *   The array of plugin settings.
+   *
+   * @see settingsSerialize()
+   */
+  protected static function settingsUnserialize(array &$settings) {
+    foreach (static::$arraySettingsKeys as $key) {
+      if (isset($settings[$key]) && is_string($settings[$key])) {
+        $settings[$key] = unserialize($settings[$key]);
+      }
+    }
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
