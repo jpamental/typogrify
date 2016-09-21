@@ -28,10 +28,10 @@ use Drupal\Core\Url;
  *     "wrap_caps" = 1,
  *     "wrap_initial_quotes" = 1,
  *     "wrap_numbers" = 0,
- *     "ligatures" = {},
- *     "arrows" = {},
- *     "fractions" = {},
- *     "quotes" = {},
+ *     "ligatures" = "a:0:{}",
+ *     "arrows" = "a:0:{}",
+ *     "fractions" = "a:0:{}",
+ *     "quotes" = "a:0:{}",
  *   },
  *   weight = 10
  * )
