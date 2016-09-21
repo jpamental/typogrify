@@ -290,7 +290,7 @@ class TypogrifyFilter extends FilterBase {
 
     $form['info']['typogrify_status'] = [
       '#theme' => 'item_list',
-      '#items' => ['items' => $version_strings],
+      '#items' => $version_strings,
       '#title' => t('Versions'),
     ];
 
