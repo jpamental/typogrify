@@ -95,6 +95,7 @@ class TypogrifyFilter extends FilterBase {
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
     $settings = $this->settings;
+    static::settingsUnserialize($settings);
 
     // @fixme Use the auto loader for this business.
     // @fixme Also these should use composer to be included.
@@ -300,6 +301,7 @@ class TypogrifyFilter extends FilterBase {
    * {@inheritdoc}
    */
   public function setConfiguration(array $configuration) {
+    static::settingsSerialize($configuration['settings']);
     parent::setConfiguration($configuration);
   }
 
@@ -307,6 +309,8 @@ class TypogrifyFilter extends FilterBase {
    * {@inheritdoc}
    */
   public function process($text, $langcode) {
+    $settings = $this->settings;
+    static::settingsUnserialize($settings);
     $characters_to_convert = array();
     $ctx = array();
 
