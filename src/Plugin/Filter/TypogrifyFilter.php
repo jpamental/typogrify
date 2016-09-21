@@ -282,10 +282,10 @@ class TypogrifyFilter extends FilterBase {
     // Version Information Settings.
     $version_strings = array();
     $version_strings[] = t('SmartyPants PHP version: !version', array(
-      '!version' => Link(SMARTYPANTS_PHP_VERSION, Url::fromUri('http://www.michelf.com/projects/php-smartypants/')),
+      '!version' => \Drupal::l(SMARTYPANTS_PHP_VERSION, Url::fromUri('http://www.michelf.com/projects/php-smartypants/')),
     ));
     $version_strings[] = t('PHP Typogrify Version: !version', array(
-      '!version' => Link(PHP_TYPOGRIFY_VERSION, Url::fromUri('http://blog.hamstu.com/')),
+      '!version' => \Drupal::l(PHP_TYPOGRIFY_VERSION, Url::fromUri('http://blog.hamstu.com/')),
     ));
 
     $form['info']['typogrify_status'] = [
