@@ -2,11 +2,6 @@
 
 /**
  * @file
- * Typogrify: Brings typographical refinemnts to drupal
- *
- * Hook together all the typogrify components.
+ * Define hook implementations for the typogrify module.
  */
-namespace Drupal\typogrify;
-
 define('PHP_TYPOGRIFY_VERSION', '1.0');
-

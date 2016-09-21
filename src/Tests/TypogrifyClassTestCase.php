@@ -1,16 +1,13 @@
 <?php
+
 namespace Drupal\typogrify;
 
-/**
- * @file
- * Unit tests for the basic typogrify functionality.
- */
-
 class TypogrifyClassTestCase extends DrupalWebTestCase {
+
   /**
    * Implements getInfo().
    */
-  function getInfo() {
+  public function getInfo() {
     return array(
       'name' => t('typogrify.class basic tests'),
       'description' => t('Testing all methods on the Typogrify class and their interaction.'),
@@ -21,7 +18,7 @@ class TypogrifyClassTestCase extends DrupalWebTestCase {
   /**
    * Implements setUp().
    */
-  function setUp() {
+  public function setUp() {
     parent::setUp('typogrify');
     module_load_include('class.php', 'typogrify');
   }
@@ -29,7 +26,7 @@ class TypogrifyClassTestCase extends DrupalWebTestCase {
   /**
    * Tests ampersand-wrapping.
    */
-  function testAmpersandWrapping() {
+  public function testAmpersandWrapping() {
     $before = 'John & Robert.';
     $after = 'John <span class="amp">&amp;</span> Robert.';
     $this->assertEqual(Typogrify::amp($before), $after,
@@ -43,29 +40,29 @@ class TypogrifyClassTestCase extends DrupalWebTestCase {
     $before = 'advanced robotics &&nbsp;computing...';
     $after = 'advanced robotics <span class="amp">&amp;</span>&nbsp;computing...';
     $this->assertEqual(Typogrify::amp($before), $after,
-      t("One space as HTML entitiy."));
+      t('One space as HTML entitiy.'));
 
     $before = 'advanced robotics &amp; computing...';
     $after = 'advanced robotics <span class="amp">&amp;</span> computing...';
     $this->assertEqual(Typogrify::amp($before), $after,
-      t("Ampersand as HTML entitiy."));
+      t('Ampersand as HTML entitiy.'));
 
     $before = 'advanced robotics&nbsp;&amp;&nbsp;computing...';
     $after = 'advanced robotics&nbsp;<span class="amp">&amp;</span>&nbsp;computing...';
     $this->assertEqual(Typogrify::amp($before), $after,
-      t("Both spaces and ampersand as HTML entities."));
+      t('Both spaces and ampersand as HTML entities.'));
 
     $before = 'P&amp;T had many clients, of which DD&T &amp; Cronhammar, Kronhammer & Hjort were the largest';
     $after = 'P&amp;T had many clients, of which DD&T <span class="amp">&amp;</span> Cronhammar, Kronhammer <span class="amp">&amp;</span> Hjort were the largest';
     $this->assertEqual(Typogrify::amp($before), $after,
-      t("Both spaces and ampersand as HTML entities."));
+      t('Both spaces and ampersand as HTML entities.'));
 
   }
 
   /**
    * Widont test.
    */
-  function testWidont() {
+  public function testWidont() {
     $before = 'A very simple test';
     $after = 'A very simple&nbsp;test';
     $this->assertEqual(Typogrify::widont($before), $after,
