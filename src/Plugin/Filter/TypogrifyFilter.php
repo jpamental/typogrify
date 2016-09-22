@@ -337,7 +337,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Wrap caps.
     if ($settings['wrap_caps']) {
-      $text = Typogrify::caps($text);
+      $text = \Typogrify::caps($text);
     }
 
     // Build a list of arrows to convert.
@@ -390,7 +390,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Wrap initial quotes.
     if ($settings['wrap_initial_quotes']) {
-      $text = Typogrify::initial_quotes($text);
+      $text = \Typogrify::initial_quotes($text);
     }
 
     // Wrap initial quotes.
@@ -400,7 +400,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Remove widows.
     if ($settings['widont_enabled']) {
-      $text = Typogrify::widont($text);
+      $text = \Typogrify::widont($text);
     }
 
     // Replace normal spaces with non-breaking spaces before "double punctuation
