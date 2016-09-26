@@ -28,10 +28,10 @@ use Drupal\Core\Url;
  *     "wrap_caps" = 1,
  *     "wrap_initial_quotes" = 1,
  *     "wrap_numbers" = 0,
- *     "ligatures" = {},
- *     "arrows" = {},
- *     "fractions" = {},
- *     "quotes" = {},
+ *     "ligatures" = "a:0:{}",
+ *     "arrows" = "a:0:{}",
+ *     "fractions" = "a:0:{}",
+ *     "quotes" = "a:0:{}",
  *   },
  *   weight = 10
  * )
@@ -39,10 +39,63 @@ use Drupal\Core\Url;
 class TypogrifyFilter extends FilterBase {
 
   /**
+   * The keys in the settings array that are array-valued.
+   *
+   * @var array
+   */
+  protected static $arraySettingsKeys = array(
+    'ligatures',
+    'arrows',
+    'fractions',
+    'quotes',
+  );
+
+  /**
+   * Serialize array values.
+   *
+   * There must be a better way to do this, but it looks as though trying to
+   * save an array-valued plugin setting fails. Our solution is to serialize the
+   * settings before saving and unserialize them before using.
+   *
+   * Serialize $settings[$key] for each $key in $arraySettingsKeys.
+   *
+   * @param array &$settings
+   *   The array of plugin settings.
+   *
+   * @see settingsUnserialize()
+   */
+  protected static function settingsSerialize(array &$settings) {
+    foreach (static::$arraySettingsKeys as $key) {
+      if (isset($settings[$key]) && is_array($settings[$key])) {
+        $settings[$key] = serialize(array_filter($settings[$key]));
+      }
+    }
+  }
+
+  /**
+   * Unserialize array values.
+   *
+   * Unserialize $settings[$key] for each $key in $arraySettingsKeys.
+   *
+   * @param array &$settings
+   *   The array of plugin settings.
+   *
+   * @see settingsSerialize()
+   */
+  protected static function settingsUnserialize(array &$settings) {
+    foreach (static::$arraySettingsKeys as $key) {
+      if (isset($settings[$key]) && is_string($settings[$key])) {
+        $settings[$key] = unserialize($settings[$key]);
+      }
+    }
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
     $settings = $this->settings;
+    static::settingsUnserialize($settings);
 
     // @fixme Use the auto loader for this business.
     // @fixme Also these should use composer to be included.
@@ -229,15 +282,15 @@ class TypogrifyFilter extends FilterBase {
     // Version Information Settings.
     $version_strings = array();
     $version_strings[] = t('SmartyPants PHP version: !version', array(
-      '!version' => Link(SMARTYPANTS_PHP_VERSION, Url::fromUri('http://www.michelf.com/projects/php-smartypants/')),
+      '!version' => \Drupal::l(SMARTYPANTS_PHP_VERSION, Url::fromUri('http://www.michelf.com/projects/php-smartypants/')),
     ));
     $version_strings[] = t('PHP Typogrify Version: !version', array(
-      '!version' => Link(PHP_TYPOGRIFY_VERSION, Url::fromUri('http://blog.hamstu.com/')),
+      '!version' => \Drupal::l(PHP_TYPOGRIFY_VERSION, Url::fromUri('http://blog.hamstu.com/')),
     ));
 
     $form['info']['typogrify_status'] = [
       '#theme' => 'item_list',
-      '#items' => ['items' => $version_strings],
+      '#items' => $version_strings,
       '#title' => t('Versions'),
     ];
 
@@ -248,6 +301,7 @@ class TypogrifyFilter extends FilterBase {
    * {@inheritdoc}
    */
   public function setConfiguration(array $configuration) {
+    static::settingsSerialize($configuration['settings']);
     parent::setConfiguration($configuration);
   }
 
@@ -255,6 +309,8 @@ class TypogrifyFilter extends FilterBase {
    * {@inheritdoc}
    */
   public function process($text, $langcode) {
+    $settings = $this->settings;
+    static::settingsUnserialize($settings);
     $characters_to_convert = array();
     $ctx = array();
 
@@ -281,7 +337,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Wrap caps.
     if ($settings['wrap_caps']) {
-      $text = Typogrify::caps($text);
+      $text = \Typogrify::caps($text);
     }
 
     // Build a list of arrows to convert.
@@ -334,7 +390,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Wrap initial quotes.
     if ($settings['wrap_initial_quotes']) {
-      $text = Typogrify::initial_quotes($text);
+      $text = \Typogrify::initial_quotes($text);
     }
 
     // Wrap initial quotes.
@@ -344,7 +400,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Remove widows.
     if ($settings['widont_enabled']) {
-      $text = Typogrify::widont($text);
+      $text = \Typogrify::widont($text);
     }
 
     // Replace normal spaces with non-breaking spaces before "double punctuation
