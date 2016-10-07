@@ -2,6 +2,7 @@
 
 namespace Drupal\typogrify\Plugin\Filter;
 
+use Drupal\typogrify\Typogrify;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\filter\FilterProcessResult;
 use Drupal\filter\Plugin\FilterBase;
@@ -98,7 +99,6 @@ class TypogrifyFilter extends FilterBase {
 
     // @fixme Use the auto loader for this business.
     // @fixme Also these should use composer to be included.
-    module_load_include('class.php', 'typogrify');
     module_load_include('php', 'typogrify', 'unicode-conversion');
     module_load_include('php', 'typogrify', 'smartypants');
 
@@ -323,7 +323,6 @@ class TypogrifyFilter extends FilterBase {
       $ctx['langcode'] = $langcode;
     }
     // Load Helpers.
-    module_load_include('class.php', 'typogrify');
     module_load_include('php', 'typogrify', 'unicode-conversion');
     module_load_include('php', 'typogrify', 'smartypants');
 
@@ -336,7 +335,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Wrap caps.
     if ($settings['wrap_caps']) {
-      $text = \Typogrify::caps($text);
+      $text = Typogrify::caps($text);
     }
 
     // Build a list of arrows to convert.
@@ -389,7 +388,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Wrap initial quotes.
     if ($settings['wrap_initial_quotes']) {
-      $text = \Typogrify::initial_quotes($text);
+      $text = Typogrify::initial_quotes($text);
     }
 
     // Wrap initial quotes.
@@ -399,7 +398,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Remove widows.
     if ($settings['widont_enabled']) {
-      $text = \Typogrify::widont($text);
+      $text = Typogrify::widont($text);
     }
 
     // Replace normal spaces with non-breaking spaces before "double punctuation

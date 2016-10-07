@@ -22,7 +22,6 @@ class TypogrifyClassTestCase extends DrupalWebTestCase {
    */
   function setUp() {
     parent::setUp('typogrify');
-    module_load_include('class.php', 'typogrify');
   }
 
   /**
