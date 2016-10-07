@@ -19,7 +19,6 @@ class TypogrifySmartyPantsTestCase extends DrupalWebTestCase {
    */
   public function setUp() {
     parent::setUp('typogrify');
-    module_load_include('class.php', 'typogrify');
     module_load_include('php', 'typogrify', 'unicode-conversion');
     module_load_include('php', 'typogrify', 'smartypants');
     global $filter;

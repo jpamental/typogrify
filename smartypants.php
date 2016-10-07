@@ -16,6 +16,8 @@
  * Re-released under GPLv2 for Drupal.
  */
 
+use Drupal\typogrify\Typogrify;
+
 // Fri 9 Dec 2005
 define('SMARTYPANTS_PHP_VERSION', '1.5.1e');
 // Fri 12 Mar 2004

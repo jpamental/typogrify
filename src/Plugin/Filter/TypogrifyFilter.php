@@ -2,7 +2,7 @@
 
 namespace Drupal\typogrify\Plugin\Filter;
 
-use Drupal\typogrify;
+use Drupal\typogrify\Typogrify;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\filter\FilterProcessResult;
 use Drupal\filter\Plugin\FilterBase;
@@ -99,7 +99,6 @@ class TypogrifyFilter extends FilterBase {
 
     // @fixme Use the auto loader for this business.
     // @fixme Also these should use composer to be included.
-    module_load_include('class.php', 'typogrify');
     module_load_include('php', 'typogrify', 'unicode-conversion');
     module_load_include('php', 'typogrify', 'smartypants');
 
@@ -112,7 +111,7 @@ class TypogrifyFilter extends FilterBase {
     $form['smartypants_enabled'] = array(
       '#type' => 'checkbox',
       '#title' => t('Use typographers quotation marks and dashes (!smartylink)', array(
-        '!smartylink' => \Drupal::l('SmartyPants', \Drupal\Core\Url::fromUri('http://daringfireball.net/projects/smartypants/')),
+        '!smartylink' => \Drupal::l('SmartyPants', Url::fromUri('http://daringfireball.net/projects/smartypants/')),
       )),
       '#default_value' => $settings['smartypants_enabled'],
     );
@@ -324,7 +323,6 @@ class TypogrifyFilter extends FilterBase {
       $ctx['langcode'] = $langcode;
     }
     // Load Helpers.
-    module_load_include('class.php', 'typogrify');
     module_load_include('php', 'typogrify', 'unicode-conversion');
     module_load_include('php', 'typogrify', 'smartypants');
 
@@ -337,7 +335,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Wrap caps.
     if ($settings['wrap_caps']) {
-      $text = \Typogrify::caps($text);
+      $text = Typogrify::caps($text);
     }
 
     // Build a list of arrows to convert.
@@ -390,7 +388,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Wrap initial quotes.
     if ($settings['wrap_initial_quotes']) {
-      $text = \Typogrify::initial_quotes($text);
+      $text = Typogrify::initial_quotes($text);
     }
 
     // Wrap initial quotes.
@@ -400,7 +398,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Remove widows.
     if ($settings['widont_enabled']) {
-      $text = \Typogrify::widont($text);
+      $text = Typogrify::widont($text);
     }
 
     // Replace normal spaces with non-breaking spaces before "double punctuation
@@ -437,9 +435,9 @@ class TypogrifyFilter extends FilterBase {
       if ($settings['wrap_initial_quotes']) {
         $output .= '<li>' . t("Converts straight quotation marks to typographer's quotation marks, using SmartyPants.");
         $output .= '</li><li>' . t('Wraps initial quotation marks with !quote or !dquote.', array(
-              '!quote' => '<code>&lt;span class="quo"&gt;&lt;/span&gt;</code>',
-              '!dquote' => '<code>&lt;span class="dquo"&gt;&lt;/span&gt;</code>', )
-          ) . '</li>';
+          '!quote' => '<code>&lt;span class="quo"&gt;&lt;/span&gt;</code>',
+          '!dquote' => '<code>&lt;span class="dquo"&gt;&lt;/span&gt;</code>',
+        )) . '</li>';
       }
       $output .= t('<li>Converts multiple hyphens to en dashes and em dashes (according to your preferences), using SmartyPants.</li>');
       if ($settings['hyphenate_shy']) {
@@ -458,10 +456,11 @@ class TypogrifyFilter extends FilterBase {
       // Build a list of quotation marks to convert.
       foreach (unicode_conversion_map('quotes') as $ascii => $unicode) {
         if ($settings['quotes'][$ascii]) {
-          $output .= '<li>' . t('Converts <code>!ascii</code> to !unicode', array(
-              '!ascii' => $ascii,
-              '!unicode' => $unicode,
-            )) . "</li>\n";
+          $ascii_to_unicode .= t('Converts <code>!ascii</code> to !unicode', array(
+            '!ascii' => $ascii,
+            '!unicode' => $unicode,
+          ));
+          $output .= "<li>$ascii_to_unicode</li>\n";
         }
       }
       $output .= '</ul>';
@@ -478,18 +477,19 @@ class TypogrifyFilter extends FilterBase {
    *
    * Unquotes a string.
    *
-   * @param string|array $attribute_values
-   *   String to be unquoted.
+   * @param string|array $text
+   *   String or array of strings to be unquoted.
    *
-   * @return string|string
+   * @return string|array
+   *   Original $text with simple '<' and '>' instead of HTML entities.
    */
-  private function unquote($_) {
-    $_ = str_replace(
+  private function unquote($text) {
+    $text = str_replace(
       array('&lt;', '&gt;'),
-      array('<',    '>'),
-      $_);
+      array('<', '>'),
+      $text);
 
-    return $_;
+    return $text;
   }
 
 }
