@@ -99,11 +99,6 @@ class TypogrifyFilter extends FilterBase {
     $settings = $this->settings;
     static::settingsUnserialize($settings);
 
-    // @fixme Use the auto loader for this business.
-    // @fixme Also these should use composer to be included.
-    module_load_include('php', 'typogrify', 'unicode-conversion');
-    module_load_include('php', 'typogrify', 'smartypants');
-
     $form['help'] = array(
       '#type' => 'markup',
       '#value' => '<p>' . t('Enable the following typographic refinements:') . '</p>',
@@ -324,9 +319,6 @@ class TypogrifyFilter extends FilterBase {
     else {
       $ctx['langcode'] = $langcode;
     }
-    // Load Helpers.
-    module_load_include('php', 'typogrify', 'unicode-conversion');
-    module_load_include('php', 'typogrify', 'smartypants');
 
     // Build a list of ligatures to convert.
     foreach (UnicodeConversion::map('ligature') as $ascii => $unicode) {
@@ -424,8 +416,6 @@ class TypogrifyFilter extends FilterBase {
     $settings = $this->settings;
 
     if ($long) {
-      module_load_include('php', 'typogrify', 'unicode-conversion');
-
       $output = t('Typogrify.module brings the typographic refinements of Typogrify to Drupal.');
       $output .= '<ul>';
       if ($settings['wrap_ampersand']) {
