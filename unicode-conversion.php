@@ -1,5 +1,7 @@
 <?php
 
+use Drupal\typogrify\SmartyPants;
+
 /**
  * @file
  * Return the unicode conversion maps.
@@ -111,7 +113,7 @@ function convert_characters($text, $characters_to_convert) {
     $unicode_strings[] = $unicode_map[$ascii_string];
   }
 
-  $tokens = _TokenizeHTML($text);
+  $tokens = SmartyPants::tokenizeHtml($text);
   $result = '';
   // Keep track of when we're inside <pre> or <code> tags.
   $in_pre = 0;
@@ -120,14 +122,14 @@ function convert_characters($text, $characters_to_convert) {
       // Don't mess with text inside tags, <pre> blocks, or <code> blocks.
       $result .= $cur_token[1];
       // Get the tags to skip regex from SmartyPants.
-      if (preg_match(SMARTYPANTS_TAGS_TO_SKIP, $cur_token[1], $matches)) {
+      if (preg_match(SmartyPants::SMARTYPANTS_TAGS_TO_SKIP, $cur_token[1], $matches)) {
         $in_pre = isset($matches[1]) && $matches[1] == '/' ? 0 : 1;
       }
     }
     else {
       $t = $cur_token[1];
       if ($in_pre == 0) {
-        $t = ProcessEscapes($t);
+        $t = SmartyPants::processEscapes($t);
         $t = str_replace($characters_to_convert, $unicode_strings, $t);
       }
       $result .= $t;
@@ -135,51 +137,3 @@ function convert_characters($text, $characters_to_convert) {
   }
   return $result;
 }
-
-
-// _TokenizeHTML is shared between PHP SmartyPants and PHP Markdown.
-// We're borrowing it for Typogrify.module, too
-// We only define it if it is not already defined.
-if (!function_exists('_TokenizeHTML')) :
-/**
- * Fallback Tokenizer if Markdown not present.
- *
- * @param string $str
- *   String containing HTML markup.
- *
- * @returns array
- *   An array of the tokens comprising the input string. Each token is either
- *   a tag (possibly with nested, tags contained therein, such as
- *   <a href="<MTFoo>" />, or a run of text between tags. Each element of the
- *   array is a two-element array; the first is either 'tag' or 'text'; the
- *   second is the actual value.
- *
- * Regular expression derived from the _tokenize() subroutine in
- * Brad Choate's MTRegex plugin.
- * <http://www.bradchoate.com/past/mtregex.php>
- */
-function _TokenizeHTML($str) {
-
-  $index = 0;
-  $tokens = array();
-
-  // Comment
-  // Processing instruction
-  // Regular tags.
-  $match = '(?s:<!(?:--.*?--\s*)+>)|' .
-    '(?s:<\?.*?\?>)|' .
-    '(?:<[/!$]?[-a-zA-Z0-9:]+\b(?>[^"\'>]+|"[^"]*"|\'[^\']*\')*>)';
-
-  $parts = preg_split("{($match)}", $str, -1, PREG_SPLIT_DELIM_CAPTURE);
-
-  foreach ($parts as $part) {
-    if (++$index % 2 && $part != '') {
-      $tokens[] = array('text', $part);
-    }
-    else {
-      $tokens[] = array('tag', $part);
-    }
-  }
-  return $tokens;
-}
-endif;

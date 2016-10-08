@@ -69,17 +69,13 @@ class Typogrify {
    * Wraps multiple capital letters in ``<span class="caps">``
    * so they can be styled with CSS.
    *
-   * Uses the smartypants tokenizer to not screw with HTML or with tags it shouldn't.
+   * Uses the smartypants tokenizer to not screw with HTML or with tags it
+   * shouldn't.
    */
   public static function caps($text) {
-    // If _TokenizeHTML from Smartypants is not present, don't do anything.
-    if (!function_exists('_TokenizeHTML')) {
-      return $text;
-    }
-
-    $tokens = _TokenizeHTML($text);
+    $tokens = SmartyPants::tokenizeHtml($text);
     $result = array();
-    $in_skipped_tag = false;
+    $in_skipped_tag = FALSE;
 
     $cap_finder = "/(
             (\b[[\p{Lu}=\d]*       # Group 2: Any amount of caps and digits
@@ -94,7 +90,7 @@ class Typogrify {
       if ($token[0] == 'tag') {
         // Don't mess with tags.
         $result[] = $token[1];
-        $close_match = preg_match(SMARTYPANTS_TAGS_TO_SKIP, $token[1]);
+        $close_match = preg_match(SmartyPants::SMARTYPANTS_TAGS_TO_SKIP, $token[1]);
         if ($close_match) {
           $in_skipped_tag = true;
         }
@@ -191,7 +187,7 @@ class Typogrify {
   public static function filter($text, $do_guillemets = FALSE) {
     $text = self::amp($text);
     $text = self::widont($text);
-    $text = SmartyPants($text);
+    $text = SmartyPants::process($text);
     $text = self::caps($text);
     $text = self::initial_quotes($text, $do_guillemets);
     $text = self::dash($text);

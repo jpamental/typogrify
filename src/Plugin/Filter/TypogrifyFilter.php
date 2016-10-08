@@ -2,6 +2,7 @@
 
 namespace Drupal\typogrify\Plugin\Filter;
 
+use Drupal\typogrify\SmartyPants;
 use Drupal\typogrify\Typogrify;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\filter\FilterProcessResult;
@@ -117,8 +118,8 @@ class TypogrifyFilter extends FilterBase {
     );
 
     // Smartypants hyphenation settings.
-    // Uses the same values as the parse attributes in the SmartyPants
-    // function (@see SmartyPants in smartypants.php)
+    // Uses the same values as the parse attributes in the
+    // SmartyPants::process() function.
     $form['smartypants_hyphens'] = array(
       '#type' => 'select',
       '#title' => t('Hyphenation settings for SmartyPants'),
@@ -281,7 +282,7 @@ class TypogrifyFilter extends FilterBase {
     // Version Information Settings.
     $version_strings = array();
     $version_strings[] = t('SmartyPants PHP version: !version', array(
-      '!version' => \Drupal::l(SMARTYPANTS_PHP_VERSION, Url::fromUri('http://www.michelf.com/projects/php-smartypants/')),
+      '!version' => \Drupal::l(SmartyPants::SMARTYPANTS_PHP_VERSION, Url::fromUri('http://www.michelf.com/projects/php-smartypants/')),
     ));
     $version_strings[] = t('PHP Typogrify Version: !version', array(
       '!version' => \Drupal::l(PHP_TYPOGRIFY_VERSION, Url::fromUri('http://blog.hamstu.com/')),
@@ -368,22 +369,22 @@ class TypogrifyFilter extends FilterBase {
 
     // Wrap ampersands.
     if ($settings['wrap_ampersand']) {
-      $text = SmartAmpersand($text);
+      $text = SmartyPants::smartAmpersand($text);
     }
 
     // Smartypants formatting.
     if ($settings['smartypants_enabled']) {
-      $text = SmartyPants($text, $settings['smartypants_hyphens'], $ctx);
+      $text = SmartyPants::process($text, $settings['smartypants_hyphens'], $ctx);
     }
 
     // Wrap abbreviations.
     if ($settings['wrap_abbr'] > 0) {
-      $text = typogrify_smart_abbreviation($text, $settings['wrap_abbr']);
+      $text = SmartyPants::smartAbbreviation($text, $settings['wrap_abbr']);
     }
 
     // Wrap huge numbers.
     if ($settings['wrap_numbers'] > 0) {
-      $text = typogrify_smart_numbers($text, $settings['wrap_numbers']);
+      $text = SmartyPants::smartNumbers($text, $settings['wrap_numbers']);
     }
 
     // Wrap initial quotes.
@@ -393,7 +394,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Wrap initial quotes.
     if ($settings['hyphenate_shy']) {
-      $text = typogrify_hyphenate($text);
+      $text = SmartyPants::hyphenate($text);
     }
 
     // Remove widows.
@@ -404,12 +405,12 @@ class TypogrifyFilter extends FilterBase {
     // Replace normal spaces with non-breaking spaces before "double punctuation
     // marks". This is especially useful in french.
     if (isset($settings['space_to_nbsp']) && $settings['space_to_nbsp']) {
-      $text = typogrify_space_to_nbsp($text);
+      $text = SmartyPants::spaceToNbsp($text);
     }
 
     // Replace normal whitespace '-' whitespace with em-dash.
     if (isset($settings['space_hyphens']) && $settings['space_hyphens']) {
-      $text = typogrify_space_hyphens($text);
+      $text = SmartyPants::spaceHyphens($text);
     }
 
     return new FilterProcessResult($text);
