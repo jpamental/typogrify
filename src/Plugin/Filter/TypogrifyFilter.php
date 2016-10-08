@@ -4,6 +4,7 @@ namespace Drupal\typogrify\Plugin\Filter;
 
 use Drupal\typogrify\SmartyPants;
 use Drupal\typogrify\Typogrify;
+use Drupal\typogrify\UnicodeConversion;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\filter\FilterProcessResult;
 use Drupal\filter\Plugin\FilterBase;
@@ -215,7 +216,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Ligature conversion settings.
     $ligature_options = array();
-    foreach (unicode_conversion_map('ligature') as $ascii => $unicode) {
+    foreach (UnicodeConversion::map('ligature') as $ascii => $unicode) {
       $ligature_options[$ascii] = t('Convert <code>@ascii</code> to !unicode', array(
         '@ascii' => $ascii,
         '!unicode' => $unicode,
@@ -231,7 +232,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Arrow conversion settings.
     $arrow_options = array();
-    foreach (unicode_conversion_map('arrow') as $ascii => $unicode) {
+    foreach (UnicodeConversion::map('arrow') as $ascii => $unicode) {
       $arrow_options[$ascii] = t('Convert <code>@ascii</code> to !unicode', array(
         '@ascii' => $this->unquote($ascii),
         '!unicode' => $unicode,
@@ -248,7 +249,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Fraction conversion settings.
     $fraction_options = array();
-    foreach (unicode_conversion_map('fraction') as $ascii => $unicode) {
+    foreach (UnicodeConversion::map('fraction') as $ascii => $unicode) {
       $fraction_options[$ascii] = t('Convert <code>@ascii</code> to !unicode', array(
         '@ascii' => $ascii,
         '!unicode' => $unicode,
@@ -265,7 +266,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Quotes conversion settings.
     $quotes_options = array();
-    foreach (unicode_conversion_map('quotes') as $quotes => $unicode) {
+    foreach (UnicodeConversion::map('quotes') as $quotes => $unicode) {
       $quotes_options[$quotes] = t('Convert <code>@ascii</code> to !unicode', array(
         '@ascii' => $this->unquote($quotes),
         '!unicode' => $unicode,
@@ -328,7 +329,7 @@ class TypogrifyFilter extends FilterBase {
     module_load_include('php', 'typogrify', 'smartypants');
 
     // Build a list of ligatures to convert.
-    foreach (unicode_conversion_map('ligature') as $ascii => $unicode) {
+    foreach (UnicodeConversion::map('ligature') as $ascii => $unicode) {
       if (isset($settings['ligatures'][$ascii]) && $settings['ligatures'][$ascii]) {
         $characters_to_convert[] = $ascii;
       }
@@ -340,7 +341,7 @@ class TypogrifyFilter extends FilterBase {
     }
 
     // Build a list of arrows to convert.
-    foreach (unicode_conversion_map('arrow') as $ascii => $unicode) {
+    foreach (UnicodeConversion::map('arrow') as $ascii => $unicode) {
       $htmle = $this->unquote($ascii);
       if ((isset($settings['arrows'][$ascii]) && $settings['arrows'][$ascii]) ||
         (isset($settings['arrows'][$htmle]) && $settings['arrows'][$htmle])) {
@@ -349,14 +350,14 @@ class TypogrifyFilter extends FilterBase {
     }
 
     // Build a list of fractions to convert.
-    foreach (unicode_conversion_map('fraction') as $ascii => $unicode) {
+    foreach (UnicodeConversion::map('fraction') as $ascii => $unicode) {
       if (isset($settings['fractions'][$ascii]) && $settings['fractions'][$ascii]) {
         $characters_to_convert[] = $ascii;
       }
     }
 
     // Build a list of quotation marks to convert.
-    foreach (unicode_conversion_map('quotes') as $ascii => $unicode) {
+    foreach (UnicodeConversion::map('quotes') as $ascii => $unicode) {
       if (isset($settings['quotes'][$ascii]) && $settings['quotes'][$ascii]) {
         $characters_to_convert[] = $ascii;
       }
@@ -364,7 +365,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Convert ligatures and arrows.
     if (count($characters_to_convert) > 0) {
-      $text = convert_characters($text, $characters_to_convert);
+      $text = UnicodeConversion::convertCharacters($text, $characters_to_convert);
     }
 
     // Wrap ampersands.
@@ -455,7 +456,7 @@ class TypogrifyFilter extends FilterBase {
       }
       $output .= '<li>' . t('Adds a css style sheet that uses the &lt;span&gt; tags to substitute a showy ampersand in headlines, switch caps to small caps, and hang initial quotation marks.') . '</li>';
       // Build a list of quotation marks to convert.
-      foreach (unicode_conversion_map('quotes') as $ascii => $unicode) {
+      foreach (UnicodeConversion::map('quotes') as $ascii => $unicode) {
         if ($settings['quotes'][$ascii]) {
           $ascii_to_unicode .= t('Converts <code>!ascii</code> to !unicode', array(
             '!ascii' => $ascii,
