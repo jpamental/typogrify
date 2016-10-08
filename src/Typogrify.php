@@ -103,7 +103,7 @@ class Typogrify {
           $result[] = $token[1];
         }
         else {
-          $result[] = preg_replace_callback($cap_finder, array('Typogrify', '_cap_wrapper'), $token[1]);
+          $result[] = preg_replace_callback($cap_finder, 'self::_cap_wrapper', $token[1]);
         }
       }
     }
@@ -152,7 +152,7 @@ class Typogrify {
 	                    /ix";
     }
 
-    return preg_replace_callback($quote_finder, array('Typogrify', '_quote_wrapper'), $text);
+    return preg_replace_callback($quote_finder, 'self::_quote_wrapper', $text);
   }
 
   /**
