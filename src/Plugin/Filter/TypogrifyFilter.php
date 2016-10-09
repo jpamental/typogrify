@@ -2,7 +2,9 @@
 
 namespace Drupal\typogrify\Plugin\Filter;
 
+use Drupal\typogrify\SmartyPants;
 use Drupal\typogrify\Typogrify;
+use Drupal\typogrify\UnicodeConversion;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\filter\FilterProcessResult;
 use Drupal\filter\Plugin\FilterBase;
@@ -97,11 +99,6 @@ class TypogrifyFilter extends FilterBase {
     $settings = $this->settings;
     static::settingsUnserialize($settings);
 
-    // @fixme Use the auto loader for this business.
-    // @fixme Also these should use composer to be included.
-    module_load_include('php', 'typogrify', 'unicode-conversion');
-    module_load_include('php', 'typogrify', 'smartypants');
-
     $form['help'] = array(
       '#type' => 'markup',
       '#value' => '<p>' . t('Enable the following typographic refinements:') . '</p>',
@@ -117,8 +114,8 @@ class TypogrifyFilter extends FilterBase {
     );
 
     // Smartypants hyphenation settings.
-    // Uses the same values as the parse attributes in the SmartyPants
-    // function (@see SmartyPants in smartypants.php)
+    // Uses the same values as the parse attributes in the
+    // SmartyPants::process() function.
     $form['smartypants_hyphens'] = array(
       '#type' => 'select',
       '#title' => t('Hyphenation settings for SmartyPants'),
@@ -214,7 +211,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Ligature conversion settings.
     $ligature_options = array();
-    foreach (unicode_conversion_map('ligature') as $ascii => $unicode) {
+    foreach (UnicodeConversion::map('ligature') as $ascii => $unicode) {
       $ligature_options[$ascii] = t('Convert <code>@ascii</code> to !unicode', array(
         '@ascii' => $ascii,
         '!unicode' => $unicode,
@@ -230,7 +227,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Arrow conversion settings.
     $arrow_options = array();
-    foreach (unicode_conversion_map('arrow') as $ascii => $unicode) {
+    foreach (UnicodeConversion::map('arrow') as $ascii => $unicode) {
       $arrow_options[$ascii] = t('Convert <code>@ascii</code> to !unicode', array(
         '@ascii' => $this->unquote($ascii),
         '!unicode' => $unicode,
@@ -247,7 +244,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Fraction conversion settings.
     $fraction_options = array();
-    foreach (unicode_conversion_map('fraction') as $ascii => $unicode) {
+    foreach (UnicodeConversion::map('fraction') as $ascii => $unicode) {
       $fraction_options[$ascii] = t('Convert <code>@ascii</code> to !unicode', array(
         '@ascii' => $ascii,
         '!unicode' => $unicode,
@@ -264,7 +261,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Quotes conversion settings.
     $quotes_options = array();
-    foreach (unicode_conversion_map('quotes') as $quotes => $unicode) {
+    foreach (UnicodeConversion::map('quotes') as $quotes => $unicode) {
       $quotes_options[$quotes] = t('Convert <code>@ascii</code> to !unicode', array(
         '@ascii' => $this->unquote($quotes),
         '!unicode' => $unicode,
@@ -281,7 +278,7 @@ class TypogrifyFilter extends FilterBase {
     // Version Information Settings.
     $version_strings = array();
     $version_strings[] = t('SmartyPants PHP version: !version', array(
-      '!version' => \Drupal::l(SMARTYPANTS_PHP_VERSION, Url::fromUri('http://www.michelf.com/projects/php-smartypants/')),
+      '!version' => \Drupal::l(SmartyPants::SMARTYPANTS_PHP_VERSION, Url::fromUri('http://www.michelf.com/projects/php-smartypants/')),
     ));
     $version_strings[] = t('PHP Typogrify Version: !version', array(
       '!version' => \Drupal::l(PHP_TYPOGRIFY_VERSION, Url::fromUri('http://blog.hamstu.com/')),
@@ -322,12 +319,9 @@ class TypogrifyFilter extends FilterBase {
     else {
       $ctx['langcode'] = $langcode;
     }
-    // Load Helpers.
-    module_load_include('php', 'typogrify', 'unicode-conversion');
-    module_load_include('php', 'typogrify', 'smartypants');
 
     // Build a list of ligatures to convert.
-    foreach (unicode_conversion_map('ligature') as $ascii => $unicode) {
+    foreach (UnicodeConversion::map('ligature') as $ascii => $unicode) {
       if (isset($settings['ligatures'][$ascii]) && $settings['ligatures'][$ascii]) {
         $characters_to_convert[] = $ascii;
       }
@@ -339,7 +333,7 @@ class TypogrifyFilter extends FilterBase {
     }
 
     // Build a list of arrows to convert.
-    foreach (unicode_conversion_map('arrow') as $ascii => $unicode) {
+    foreach (UnicodeConversion::map('arrow') as $ascii => $unicode) {
       $htmle = $this->unquote($ascii);
       if ((isset($settings['arrows'][$ascii]) && $settings['arrows'][$ascii]) ||
         (isset($settings['arrows'][$htmle]) && $settings['arrows'][$htmle])) {
@@ -348,14 +342,14 @@ class TypogrifyFilter extends FilterBase {
     }
 
     // Build a list of fractions to convert.
-    foreach (unicode_conversion_map('fraction') as $ascii => $unicode) {
+    foreach (UnicodeConversion::map('fraction') as $ascii => $unicode) {
       if (isset($settings['fractions'][$ascii]) && $settings['fractions'][$ascii]) {
         $characters_to_convert[] = $ascii;
       }
     }
 
     // Build a list of quotation marks to convert.
-    foreach (unicode_conversion_map('quotes') as $ascii => $unicode) {
+    foreach (UnicodeConversion::map('quotes') as $ascii => $unicode) {
       if (isset($settings['quotes'][$ascii]) && $settings['quotes'][$ascii]) {
         $characters_to_convert[] = $ascii;
       }
@@ -363,27 +357,27 @@ class TypogrifyFilter extends FilterBase {
 
     // Convert ligatures and arrows.
     if (count($characters_to_convert) > 0) {
-      $text = convert_characters($text, $characters_to_convert);
+      $text = UnicodeConversion::convertCharacters($text, $characters_to_convert);
     }
 
     // Wrap ampersands.
     if ($settings['wrap_ampersand']) {
-      $text = SmartAmpersand($text);
+      $text = SmartyPants::smartAmpersand($text);
     }
 
     // Smartypants formatting.
     if ($settings['smartypants_enabled']) {
-      $text = SmartyPants($text, $settings['smartypants_hyphens'], $ctx);
+      $text = SmartyPants::process($text, $settings['smartypants_hyphens'], $ctx);
     }
 
     // Wrap abbreviations.
     if ($settings['wrap_abbr'] > 0) {
-      $text = typogrify_smart_abbreviation($text, $settings['wrap_abbr']);
+      $text = SmartyPants::smartAbbreviation($text, $settings['wrap_abbr']);
     }
 
     // Wrap huge numbers.
     if ($settings['wrap_numbers'] > 0) {
-      $text = typogrify_smart_numbers($text, $settings['wrap_numbers']);
+      $text = SmartyPants::smartNumbers($text, $settings['wrap_numbers']);
     }
 
     // Wrap initial quotes.
@@ -393,7 +387,7 @@ class TypogrifyFilter extends FilterBase {
 
     // Wrap initial quotes.
     if ($settings['hyphenate_shy']) {
-      $text = typogrify_hyphenate($text);
+      $text = SmartyPants::hyphenate($text);
     }
 
     // Remove widows.
@@ -404,12 +398,12 @@ class TypogrifyFilter extends FilterBase {
     // Replace normal spaces with non-breaking spaces before "double punctuation
     // marks". This is especially useful in french.
     if (isset($settings['space_to_nbsp']) && $settings['space_to_nbsp']) {
-      $text = typogrify_space_to_nbsp($text);
+      $text = SmartyPants::spaceToNbsp($text);
     }
 
     // Replace normal whitespace '-' whitespace with em-dash.
     if (isset($settings['space_hyphens']) && $settings['space_hyphens']) {
-      $text = typogrify_space_hyphens($text);
+      $text = SmartyPants::spaceHyphens($text);
     }
 
     return new FilterProcessResult($text);
@@ -422,8 +416,6 @@ class TypogrifyFilter extends FilterBase {
     $settings = $this->settings;
 
     if ($long) {
-      module_load_include('php', 'typogrify', 'unicode-conversion');
-
       $output = t('Typogrify.module brings the typographic refinements of Typogrify to Drupal.');
       $output .= '<ul>';
       if ($settings['wrap_ampersand']) {
@@ -454,7 +446,7 @@ class TypogrifyFilter extends FilterBase {
       }
       $output .= '<li>' . t('Adds a css style sheet that uses the &lt;span&gt; tags to substitute a showy ampersand in headlines, switch caps to small caps, and hang initial quotation marks.') . '</li>';
       // Build a list of quotation marks to convert.
-      foreach (unicode_conversion_map('quotes') as $ascii => $unicode) {
+      foreach (UnicodeConversion::map('quotes') as $ascii => $unicode) {
         if ($settings['quotes'][$ascii]) {
           $ascii_to_unicode .= t('Converts <code>!ascii</code> to !unicode', array(
             '!ascii' => $ascii,
